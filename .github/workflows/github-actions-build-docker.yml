@@ -5,7 +5,9 @@ on:
     branches:
       - main  # Trigger on push to the main branch
     paths:
-      - 'docker/**'  # Only trigger if files in the `docker` directory change
+      - 'docker/Dockerfile.base'       # Trigger when Dockerfile.base changes
+      - 'docker/Dockerfile.packages'   # Trigger when Dockerfile.packages changes
+      - 'src/**'                        # Trigger when any file in the src folder changes
 
 jobs:
   docker:
@@ -29,18 +31,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-docker-
 
-      # Step 4: Build base image
+      # Step 4: Build base image if Dockerfile.base has changed
       - name: Build base image
+        if: github.event.head_commit.changed_files | contains('docker/Dockerfile.base')
         run: |
           docker buildx build --cache-from=type=local,source=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache --tag rosbot-base:latest -f docker/Dockerfile.base .
 
-      # Step 5: Build packages image
+      # Step 5: Build packages image if Dockerfile.packages has changed
       - name: Build packages image
+        if: github.event.head_commit.changed_files | contains('docker/Dockerfile.packages')
         run: |
           docker buildx build --cache-from=type=local,source=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache --tag rosbot-packages:latest -f docker/Dockerfile.packages .
 
-      # Step 6: Build local image
+      # Step 6: Build local image if src changes
       - name: Build local image
+        if: github.event.head_commit.changed_files | contains('src/')
         run: |
           docker buildx build --cache-from=type=local,source=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache --tag rosbot-local:latest -f docker/Dockerfile.local .
 
