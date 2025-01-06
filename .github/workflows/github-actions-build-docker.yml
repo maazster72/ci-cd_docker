@@ -31,20 +31,20 @@ jobs:
         run: |
           docker build \
             --build-arg ARCH=${{ matrix.arch }} \
-            -t rosbot-base:${{ matrix.arch }}:latest \
+            -t rosbot-base-${{ matrix.arch }}:latest \
             -f docker/Dockerfile.base .
 
       - name: Build the package image for ${{ matrix.arch }}
         run: |
           docker build \
             --build-arg ARCH=${{ matrix.arch }} \
-            -t rosbot-packages:${{ matrix.arch }}:latest \
+            -t rosbot-packages-${{ matrix.arch }}:latest \
             -f docker/Dockerfile.packages .
 
       # Package the local image and save it as a tarfile for each architecture
       - name: Package local image for ${{ matrix.arch }}
         run: |
-          docker save rosbot-local:${{ matrix.arch }}:latest -o rosbot-local-${{ matrix.arch }}.tar
+          docker save rosbot-local-${{ matrix.arch }}:latest -o rosbot-local-${{ matrix.arch }}.tar
 
       # Optionally upload the tarfile to the repository for each architecture
       - name: Upload Docker image artifact for ${{ matrix.arch }}
