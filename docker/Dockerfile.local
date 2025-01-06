@@ -3,7 +3,7 @@ FROM rosbot-packages:latest
 WORKDIR /workspace
 
 # Copy the local src folder
-COPY src /workspace/src/
+COPY ../src /workspace/src/
 
 # Update rosdep and build
 RUN rosdep update && \

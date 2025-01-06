@@ -1,67 +1,46 @@
-name: Build Docker Images and Upload Artifacts
+name: Build Docker Images and Upload Artifact
 
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - main  # Trigger on push to the main branch
 
 jobs:
-  build:
-    runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        arch: [arm64, amd64]  # Specify the architectures to build for
+  docker:
+    runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository code
+      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Set up Docker Buildx for multi-platform support
+      # Step 2: Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Set up QEMU to enable ARM emulation (if building for ARM architecture)
-      - name: Set up QEMU for ARM Emulation
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: linux/arm64
-
-      # Build the base image for the specified architecture
-      - name: Build base image for ${{ matrix.arch }}
+      # Step 3: Build base image
+      - name: Build base image
         run: |
-          docker build \
-            --build-arg ARCH=${{ matrix.arch }} \
-            -t rosbot-base:${{ matrix.arch }}:latest \
-            -f docker/Dockerfile.base .
+          docker build -t rosbot-base:latest -f docker/Dockerfile.base .
 
-      # Build the packages image for the specified architecture
-      - name: Build packages image for ${{ matrix.arch }}
+      # Step 4: Build packages image
+      - name: Build packages image
         run: |
-          docker build \
-            --build-arg ARCH=${{ matrix.arch }} \
-            -t rosbot-packages:${{ matrix.arch }}:latest \
-            -f docker/Dockerfile.packages .
+          docker build -t rosbot-packages:latest -f docker/Dockerfile.packages .
 
-      # Build the local image for the specified architecture
-      - name: Build local image for ${{ matrix.arch }}
+      # Step 5: Build local image
+      - name: Build local image
         run: |
-          docker build \
-            --build-arg ARCH=${{ matrix.arch }} \
-            -t rosbot-local:${{ matrix.arch }}:latest \
-            -f docker/Dockerfile.local .
+          docker build -t rosbot-local:latest -f docker/Dockerfile.local .
 
-      # Save the local image as a tarfile and name it according to the architecture
-      - name: Package local image as tar for ${{ matrix.arch }}
+      # Step 6: Save local image as tarball
+      - name: Save rosbot-local image as tarball
         run: |
-          docker save rosbot-local:${{ matrix.arch }}:latest -o rosbot-local-${{ matrix.arch }}.tar
+          docker save rosbot-local:latest -o rosbot-local.tar
 
-      # Upload the tarfile as an artifact for further use
-      - name: Upload Docker image artifact for ${{ matrix.arch }}
+      # Step 7: Upload rosbot-local tarball as an artifact
+      - name: Upload rosbot-local.tar as an artifact
         uses: actions/upload-artifact@v3
         with:
-          name: rosbot-local-image-${{ matrix.arch }}
-          path: rosbot-local-${{ matrix.arch }}.tar
+          name: rosbot-local
+          path: rosbot-local.tar
