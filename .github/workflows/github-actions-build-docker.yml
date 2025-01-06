@@ -1,0 +1,42 @@
+name: Build and Test Docker
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set Up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker Images
+        run: |
+          docker buildx create --use
+          docker buildx build --platform linux/${{ matrix.arch }} \
+            -f Dockerfile.base -t my-image:base --push .
+          docker buildx build --platform linux/${{ matrix.arch }} \
+            -f Dockerfile.packages -t my-image:packages --push .
+          docker buildx build --platform linux/${{ matrix.arch }} \
+            -f Dockerfile.local -t my-image:local --output type=docker,dest=image_${{ matrix.arch }}.tar .
+
+      - name: Upload Image Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: local-image-${{ matrix.arch }}
+          path: image_${{ matrix.arch }}.tar
+
+      - name: Run Tests in Container
+        run: |
+          docker load < image_${{ matrix.arch }}.tar
+          docker run --rm my-image:local /workspace/src/test_build.py

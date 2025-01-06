@@ -1,0 +1,48 @@
+# Base image compatible with Jetson Linux or Ubuntu 20.04
+FROM ubuntu:20.04
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV ROS_DISTRO=galactic
+ARG ARCH=arm64
+
+# Install prerequisites, ROS 2, and dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        wget \
+        gnupg2 \
+        lsb-release \
+        curl \
+        sudo \
+        python3-pip \
+        build-essential \
+        libpcap-dev && \
+    wget https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -O - | apt-key add - && \
+    echo "deb [arch=${ARCH}] http://packages.ros.org/ros2/ubuntu focal main" | tee /etc/apt/sources.list.d/ros2.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ros-$ROS_DISTRO-desktop \
+        python3-rosdep && \
+    rm -rf /var/lib/apt/lists/*
+
+# Initialize rosdep
+RUN rosdep init && \
+    rosdep update
+
+# Install colcon and extensions
+RUN pip3 install -U \
+    colcon-common-extensions \
+    colcon-ros-bundle
+
+# Create a non-root user
+ENV USERNAME=myuser
+RUN useradd -m -s /bin/bash $USERNAME && \
+    echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
+    usermod -aG dialout $USERNAME
+
+# Set up ROS environment
+USER $USERNAME
+RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /home/$USERNAME/.bashrc
+
+# Entrypoint
+ENTRYPOINT ["/bin/bash", "-c", "source /opt/ros/$ROS_DISTRO/setup.bash && exec bash"]
