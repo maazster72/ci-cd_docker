@@ -34,7 +34,7 @@ jobs:
       - name: Build base image
         if: steps.base_cache.outputs.cache-hit != 'true'
         run: |
-          docker buildx build --platform linux/${{ matrix.architecture }} -t rosbot-base:${{ matrix.architecture }} ./docker/base --push
+          docker buildx build --platform linux/${{ matrix.architecture }} -t rosbot-base:${{ matrix.architecture }} ./docker/base
       
       - name: Cache Docker package image
         id: package_cache
@@ -48,7 +48,7 @@ jobs:
       - name: Build package image
         if: steps.package_cache.outputs.cache-hit != 'true'
         run: |
-          docker buildx build --platform linux/${{ matrix.architecture }} -t rosbot-packages:${{ matrix.architecture }} ./docker/package --push
+          docker buildx build --platform linux/${{ matrix.architecture }} -t rosbot-packages:${{ matrix.architecture }} ./docker/package
 
       - name: Cache Docker source image
         id: source_cache
@@ -62,7 +62,7 @@ jobs:
       - name: Build source code image
         if: steps.source_cache.outputs.cache-hit != 'true'
         run: |
-          docker buildx build --platform linux/${{ matrix.architecture }} -t rosbot-local:${{ matrix.architecture }} ./docker/source --build-arg ARCH=${{ matrix.architecture }} --push
+          docker buildx build --platform linux/${{ matrix.architecture }} -t rosbot-local:${{ matrix.architecture }} ./docker/source --build-arg ARCH=${{ matrix.architecture }}
 
       - name: Save source code image as artifact
         if: steps.source_cache.outputs.cache-hit != 'true'
