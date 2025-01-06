@@ -40,7 +40,7 @@ jobs:
       # Build rosbot-packages image using the locally built rosbot-base image
       - name: Build rosbot-packages image
         run: |
-          docker buildx build --platform linux/${{ matrix.architecture }} -t rosbot-packages:${{ matrix.architecture }} ./docker/package --build-arg BASE_IMAGE=rosbot-base:${{ matrix.architecture }} --load
+          docker buildx build --platform linux/${{ matrix.architecture }} -t rosbot-packages:${{ matrix.architecture }} ./docker/package --build-arg ARCH=${{ matrix.architecture }} --load
 
       # Cache Docker source image
       - name: Cache Docker source image
@@ -55,7 +55,7 @@ jobs:
       # Build rosbot-local image using the locally built rosbot-packages image
       - name: Build rosbot-local image
         run: |
-          docker buildx build --platform linux/${{ matrix.architecture }} -t rosbot-local:${{ matrix.architecture }} ./docker/source --build-arg BASE_IMAGE=rosbot-packages:${{ matrix.architecture }} --load
+          docker buildx build --platform linux/${{ matrix.architecture }} -t rosbot-local:${{ matrix.architecture }} ./docker/source --build-arg ARCH=${{ matrix.architecture }} --load
 
       # Save source code image as artifact (if needed)
       - name: Save rosbot-local image as artifact
