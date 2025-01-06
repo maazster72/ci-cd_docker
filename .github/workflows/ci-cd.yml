@@ -17,14 +17,14 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Cache Docker base image
         id: base_cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/docker
           key: base-${{ matrix.architecture }}-${{ github.sha }}
@@ -38,7 +38,7 @@ jobs:
       
       - name: Cache Docker package image
         id: package_cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/docker
           key: package-${{ matrix.architecture }}-${{ github.sha }}
@@ -52,7 +52,7 @@ jobs:
 
       - name: Cache Docker source image
         id: source_cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/docker
           key: source-${{ matrix.architecture }}-${{ github.sha }}
@@ -66,7 +66,7 @@ jobs:
 
       - name: Save source code image as artifact
         if: steps.source_cache.outputs.cache-hit != 'true'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: rosbot-local-image-${{ matrix.architecture }}
           path: ./docker/source/*.tar
