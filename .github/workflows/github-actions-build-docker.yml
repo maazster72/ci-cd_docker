@@ -18,15 +18,15 @@ jobs:
     steps:
       # Checkout the repository code
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       # Set up Docker Buildx for multi-platform support
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       # Set up QEMU to enable ARM emulation (if building for ARM architecture)
       - name: Set up QEMU for ARM Emulation
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
         with:
           platforms: linux/arm64
 
@@ -61,7 +61,7 @@ jobs:
 
       # Upload the tarfile as an artifact for further use
       - name: Upload Docker image artifact for ${{ matrix.arch }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: rosbot-local-image-${{ matrix.arch }}
           path: rosbot-local-${{ matrix.arch }}.tar
