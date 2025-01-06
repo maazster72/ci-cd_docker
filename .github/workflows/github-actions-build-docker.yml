@@ -24,11 +24,11 @@ jobs:
         run: |
           docker buildx create --use
           docker buildx build --platform linux/${{ matrix.arch }} \
-            -f Dockerfile.base -t my-image:base --push .
+            -f docker/Dockerfile.base -t my-image:base --push .
           docker buildx build --platform linux/${{ matrix.arch }} \
-            -f Dockerfile.packages -t my-image:packages --push .
+            -f docker/Dockerfile.packages -t my-image:packages --push .
           docker buildx build --platform linux/${{ matrix.arch }} \
-            -f Dockerfile.local -t my-image:local --output type=docker,dest=image_${{ matrix.arch }}.tar .
+            -f docker/Dockerfile.local -t my-image:local --output type=docker,dest=image_${{ matrix.arch }}.tar .
 
       - name: Upload Image Artifacts
         uses: actions/upload-artifact@v3
