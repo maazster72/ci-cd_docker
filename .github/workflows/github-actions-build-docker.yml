@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main  # Trigger on push to the main branch
+    paths:
+      - 'docker/**'  # Only trigger if files in the `docker` directory change
 
 jobs:
   docker:
@@ -18,27 +20,36 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Step 3: Build base image
+      # Step 3: Set up Docker cache
+      - name: Set up Docker cache
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-docker-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-docker-
+
+      # Step 4: Build base image
       - name: Build base image
         run: |
-          docker build -t rosbot-base:latest -f docker/Dockerfile.base .
+          docker buildx build --cache-from=type=local,source=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache --tag rosbot-base:latest -f docker/Dockerfile.base .
 
-      # Step 4: Build packages image
+      # Step 5: Build packages image
       - name: Build packages image
         run: |
-          docker build -t rosbot-packages:latest -f docker/Dockerfile.packages .
+          docker buildx build --cache-from=type=local,source=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache --tag rosbot-packages:latest -f docker/Dockerfile.packages .
 
-      # Step 5: Build local image
+      # Step 6: Build local image
       - name: Build local image
         run: |
-          docker build -t rosbot-local:latest -f docker/Dockerfile.local .
+          docker buildx build --cache-from=type=local,source=/tmp/.buildx-cache --cache-to=type=local,dest=/tmp/.buildx-cache --tag rosbot-local:latest -f docker/Dockerfile.local .
 
-      # Step 6: Save local image as tarball
+      # Step 7: Save rosbot-local image as tarball
       - name: Save rosbot-local image as tarball
         run: |
           docker save rosbot-local:latest -o rosbot-local.tar
 
-      # Step 7: Upload rosbot-local tarball as an artifact
+      # Step 8: Upload rosbot-local.tar as an artifact
       - name: Upload rosbot-local.tar as an artifact
         uses: actions/upload-artifact@v3
         with:
