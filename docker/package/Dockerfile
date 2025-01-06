@@ -1,5 +1,7 @@
-# Use the base image with Jetson Linux and ROS 2 installed
-FROM rosbot-base:latest
+# Define build argument for architecture
+ARG ARCH
+# Use the base image with Jetson Linux and ROS 2 installed based on the architecture
+FROM rosbot-base:${ARCH}
 
 # Set the environment variable for ROS
 ENV ROS_DISTRO=galactic

@@ -1,4 +1,7 @@
-FROM rosbot-packages:latest
+# Define build argument for architecture
+ARG ARCH
+# Use the base image with Jetson Linux and ROS 2 installed based on the architecture
+FROM rosbot-packages:${ARCH}
 
 WORKDIR /workspace
 
