@@ -17,10 +17,10 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       # Build rosbot-base image (local build)
       - name: Build rosbot-base image
@@ -30,7 +30,7 @@ jobs:
       # Cache Docker package image
       - name: Cache Docker package image
         id: package_cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/docker
           key: package-${{ matrix.architecture }}-${{ github.sha }}
@@ -45,7 +45,7 @@ jobs:
       # Cache Docker source image
       - name: Cache Docker source image
         id: source_cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/docker
           key: source-${{ matrix.architecture }}-${{ github.sha }}
@@ -59,7 +59,7 @@ jobs:
 
       # Save source code image as artifact (if needed)
       - name: Save rosbot-local image as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: rosbot-local-image-${{ matrix.architecture }}
           path: ./docker/source/*.tar
