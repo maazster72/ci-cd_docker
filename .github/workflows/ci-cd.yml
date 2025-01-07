@@ -17,32 +17,39 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       # Set up Docker Buildx
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       # Cache Docker layers to speed up builds
       - name: Cache Docker layers
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache/docker
           key: ${{ runner.os }}-docker-${{ matrix.architecture }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-docker-${{ matrix.architecture }}-
 
-      # Build the rosbot-base image locally
-      - name: Build rosbot-base image
+      # Set up Docker builder for multi-platform
+      - name: Set up Docker builder
         run: |
-          docker buildx build --platform linux/${{ matrix.architecture }} -t rosbot-base:latest ./docker/base --load
+          docker buildx create --use --name mybuilder
 
-      # Build the rosbot-packages image using the rosbot-base image locally built
-      - name: Build rosbot-packages image
-        run: |
-          docker buildx build --platform linux/${{ matrix.architecture }} -t rosbot-packages:latest ./docker/package --build-arg BASE_IMAGE=rosbot-base:latest --load
-
-      # Build the rosbot-local image using the rosbot-base image locally built
+      # Build the rosbot-local image
       - name: Build rosbot-local image
         run: |
-          docker buildx build --platform linux/${{ matrix.architecture }} -t rosbot-local:latest ./docker/source --build-arg BASE_IMAGE=rosbot-base:latest --load
+          docker buildx build --platform linux/${{ matrix.architecture }} -t rosbot-local-image:${{ matrix.architecture }} ./docker/Dockerfile --load
+
+      # Save the Docker image as a tarball
+      - name: Save Docker image as tar file
+        run: |
+          docker save -o rosbot-local-image-${{ matrix.architecture }}.tar rosbot-local-image:${{ matrix.architecture }}
+
+      # Upload the tarball as an artifact
+      - name: Upload Docker image tarball
+        uses: actions/upload-artifact@v3
+        with:
+          name: rosbot-local-image-${{ matrix.architecture }}
+          path: rosbot-local-image-${{ matrix.architecture }}.tar
