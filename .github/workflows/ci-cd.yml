@@ -40,7 +40,7 @@ jobs:
       # Build the rosbot-local image
       - name: Build rosbot-local image
         run: |
-          docker buildx build --platform linux/${{ matrix.architecture }} -t rosbot-local-image:${{ matrix.architecture }} ./docker/Dockerfile --load
+          docker buildx build --platform linux/${{ matrix.architecture }} -t rosbot-local-image:${{ matrix.architecture }} -f ./docker/Dockerfile --load
 
       # Save the Docker image as a tarball
       - name: Save Docker image as tar file
